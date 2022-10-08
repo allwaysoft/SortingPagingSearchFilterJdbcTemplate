@@ -33,17 +33,7 @@ public class ProductRepository {
         Order order = sort.toList().get(0);
 
         return jdbcTemplate.query("SELECT * FROM product ORDER BY " + order.getProperty() + " " + order.getDirection().name(),
-                (rs, rowNum) -> mapUserResult(rs));
-    }
-
-    private Product mapUserResult(final ResultSet rs) throws SQLException {
-        Product product = new Product();
-        product.setId(rs.getLong("id"));
-        product.setName(rs.getString("name"));
-        product.setBrand(rs.getString("brand"));
-        product.setMadein(rs.getString("madein"));
-        product.setPrice(rs.getLong("price"));
-        return product;
+                BeanPropertyRowMapper.newInstance(Product.class));
     }
 
     public int count() {
@@ -57,7 +47,7 @@ public class ProductRepository {
 
         List<Product> products = jdbcTemplate.query("SELECT * FROM product ORDER BY " + order.getProperty() + " "
                 + order.getDirection().name() + " LIMIT " + page.getPageSize() + " OFFSET " + page.getOffset(),
-                (rs, rowNum) -> mapUserResult(rs));
+                BeanPropertyRowMapper.newInstance(Product.class));
 
         return new PageImpl<Product>(products, page, count());
     }
@@ -68,7 +58,7 @@ public class ProductRepository {
 
         List<Product> products = jdbcTemplate.query("SELECT * FROM product WHERE CONCAT(id, ' ', name, ' ' , brand, ' ' , madein, ' ' , price) LIKE CONCAT('%',?,'%') ORDER BY " + order.getProperty() + " "
                 + order.getDirection().name() + " LIMIT " + page.getPageSize() + " OFFSET " + page.getOffset(),
-                (rs, rowNum) -> mapUserResult(rs), keyword
+                BeanPropertyRowMapper.newInstance(Product.class), keyword
         );
 
         return new PageImpl<Product>(products, page, count());
