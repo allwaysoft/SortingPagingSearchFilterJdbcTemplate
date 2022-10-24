@@ -36,12 +36,9 @@ public class ProductRepository {
                 BeanPropertyRowMapper.newInstance(Product.class));
     }
 
-    public int count() {
-        return jdbcTemplate.queryForObject("SELECT count(*) FROM product", Integer.class);
-    }
-
     // defaults sorts by Id if order not provided
     public Page<Product> findAll(Pageable page) {
+        int count = jdbcTemplate.queryForObject("SELECT count(*) FROM product", Integer.class);
 
         Order order = !page.getSort().isEmpty() ? page.getSort().toList().get(0) : Order.by("ID");
 
@@ -49,10 +46,11 @@ public class ProductRepository {
                 + order.getDirection().name() + " LIMIT " + page.getPageSize() + " OFFSET " + page.getOffset(),
                 BeanPropertyRowMapper.newInstance(Product.class));
 
-        return new PageImpl<Product>(products, page, count());
+        return new PageImpl<Product>(products, page, count);
     }
 
     public Page<Product> findAllByContaining(String keyword, Pageable page) {
+        int count = jdbcTemplate.queryForObject("SELECT count(* ) FROM product WHERE CONCAT(id, ' ', name, ' ' , brand, ' ' , madein, ' ' , price) LIKE CONCAT('%',?,'%') ", Integer.class, keyword);
 
         Order order = !page.getSort().isEmpty() ? page.getSort().toList().get(0) : Order.by("ID");
 
@@ -61,7 +59,7 @@ public class ProductRepository {
                 BeanPropertyRowMapper.newInstance(Product.class), keyword
         );
 
-        return new PageImpl<Product>(products, page, count());
+        return new PageImpl<Product>(products, page, count);
     }
 
     public void save(Product product) {
